@@ -3,7 +3,6 @@ package org.aoc2021
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.abs
-import kotlin.system.measureNanoTime
 
 typealias Vector = List<Int>
 typealias Matrix = List<List<Int>>
