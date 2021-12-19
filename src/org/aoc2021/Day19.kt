@@ -84,7 +84,7 @@ object Day19 {
 
         val nextScanner = lines.drop(1)
             .takeWhile(String::isNotBlank)
-            .map { line -> line.split(",").map(String::toInt).let { (a, b, c) -> listOf(a, b, c) } }
+            .map { line -> line.split(",").map(String::toInt) }
 
         return listOf(nextScanner).plus(parseLines(lines.dropWhile(String::isNotBlank).drop(1)))
     }
@@ -102,10 +102,11 @@ object Day19 {
 
             foundScannerIds.forEach { foundScannerId ->
                 val foundScannerLocation = scannerLocations[foundScannerId]!!
+                val foundBeaconLocations = scanners[foundScannerId].map { beaconLocation ->
+                    beaconLocation.matrixMultiply(foundScannerLocation.rotation)
+                }
+
                 unknownScannerIds.forEach { unknownScannerId ->
-                    val foundBeaconLocations = scanners[foundScannerId].map { beaconLocation ->
-                        beaconLocation.matrixMultiply(foundScannerLocation.rotation)
-                    }
                     val unknownBeaconLocations = scanners[unknownScannerId]
 
                     checkForOverlap(
