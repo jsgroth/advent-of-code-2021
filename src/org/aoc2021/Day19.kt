@@ -94,60 +94,50 @@ object Day19 {
             0 to ScannerLocation(listOf(0, 0, 0), identityMatrix),
         )
 
-        while (scannerLocations.size < scanners.size) {
-            println("located ${scannerLocations.size} / ${scanners.size} scanners")
+        // Triple(rotation matrix, base beacon, other beacon distances)
+        val precomputedRotatedDistances = scanners.mapIndexed { i, beaconLocations ->
+            i to beaconLocations.flatMap { beaconLocation ->
+                all3DRotationMatrices.map { rotationMatrix ->
+                    val rotatedBeaconLocation = beaconLocation.matrixMultiply(rotationMatrix)
+                    val rotatedBeaconDistances = beaconLocations.filter { it !== beaconLocation }
+                        .map { it.matrixMultiply(rotationMatrix).vectorSubtract(rotatedBeaconLocation) }
 
-            val (foundScannerIds, unknownScannerIds) =
-                scanners.indices.partition { scannerLocations.containsKey(it) }
+                    Triple(rotationMatrix, beaconLocation.matrixMultiply(rotationMatrix), rotatedBeaconDistances.toSet())
+                }
+            }
+        }.toMap()
+
+        while (scannerLocations.size < scanners.size) {
+            val foundScannerIds = scanners.indices.filter { i -> scannerLocations.containsKey(i) }
 
             foundScannerIds.forEach { foundScannerId ->
                 val foundScannerLocation = scannerLocations[foundScannerId]!!
-                val foundBeaconLocations = scanners[foundScannerId].map { beaconLocation ->
-                    beaconLocation.matrixMultiply(foundScannerLocation.rotation)
-                }
+                val foundBeaconDistances = precomputedRotatedDistances[foundScannerId]!!
+                    .filter { (rotationMatrix, _, _) -> rotationMatrix == foundScannerLocation.rotation }
 
+                val unknownScannerIds = scanners.indices.filter { i -> !scannerLocations.containsKey(i) }
                 unknownScannerIds.forEach { unknownScannerId ->
-                    val unknownBeaconLocations = scanners[unknownScannerId]
+                    for (t in precomputedRotatedDistances[unknownScannerId]!!) {
+                        val (rotationMatrix, rotatedBeaconLocation, rotatedBeaconDistances) = t
 
-                    checkForOverlap(
-                        foundScannerLocation, foundBeaconLocations, unknownBeaconLocations
-                    )?.let { newScannerLocation ->
-                        scannerLocations[unknownScannerId] = newScannerLocation
+                        val matchingFoundDistances = foundBeaconDistances.find { (_, _, foundDistancesSet) ->
+                            foundDistancesSet.intersect(rotatedBeaconDistances).size >= 11
+                        }
+                        if (matchingFoundDistances != null) {
+                            val (_, foundBeaconLocation, _) = matchingFoundDistances
+                            val scannerCoordinates = foundScannerLocation.coordinates
+                                .vectorAdd(foundBeaconLocation)
+                                .vectorSubtract(rotatedBeaconLocation)
+
+                            scannerLocations[unknownScannerId] = ScannerLocation(scannerCoordinates, rotationMatrix)
+                            break
+                        }
                     }
                 }
             }
         }
 
         return scannerLocations.toMap()
-    }
-
-    private fun checkForOverlap(
-        scannerLocation: ScannerLocation,
-        beaconLocations: List<Vector>,
-        otherBeaconLocations: List<Vector>,
-    ): ScannerLocation? {
-        beaconLocations.forEach { beaconLocation ->
-            val beaconDistances = computeDistances(beaconLocation, beaconLocations)
-
-            all3DRotationMatrices.forEach { rotationMatrix ->
-                val rotatedOtherLocations = otherBeaconLocations.map { it.matrixMultiply(rotationMatrix) }
-
-                rotatedOtherLocations.forEach { otherBeaconLocation ->
-                    val otherBeaconDistances = computeDistances(otherBeaconLocation, rotatedOtherLocations)
-
-                    if (beaconDistances.toSet().intersect(otherBeaconDistances.toSet()).size >= 11) {
-                        val otherScannerCoordinates =
-                            scannerLocation.coordinates.vectorAdd(beaconLocation).vectorSubtract(otherBeaconLocation)
-                        return ScannerLocation(otherScannerCoordinates, rotationMatrix)
-                    }
-                }
-            }
-        }
-        return null
-    }
-
-    private fun computeDistances(beacon: Vector, beacons: List<Vector>): List<Vector> {
-        return beacons.filter { it !== beacon }.map { it.vectorSubtract(beacon) }
     }
 
     private fun countBeacons(scanners: List<List<Vector>>, scannerLocations: Map<Int, ScannerLocation>): Int {
