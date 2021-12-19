@@ -155,29 +155,18 @@ object Day19 {
     private fun generateRotationMatrices(): List<Matrix> {
         val result = mutableListOf<Matrix>()
 
-        // +z
         var currentMatrix = identityMatrix
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, zRotationMatrix))
+        listOf(
+            zRotationMatrix to yRotationMatrix,
+            yRotationMatrix to xRotationMatrix,
+            xRotationMatrix to zRotationMatrix,
+        ).forEach { (axis1Matrix, axis2Matrix) ->
+            currentMatrix = currentMatrix.multiply(axis2Matrix)
+            result.addAll(generateRotationMatricesForAxis(currentMatrix, axis1Matrix))
 
-        // -z
-        currentMatrix = currentMatrix.multiply(yRotationMatrix).multiply(yRotationMatrix)
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, zRotationMatrix))
-
-        // +y
-        currentMatrix = currentMatrix.multiply(xRotationMatrix)
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, yRotationMatrix))
-
-        // -y
-        currentMatrix = currentMatrix.multiply(xRotationMatrix).multiply(xRotationMatrix)
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, yRotationMatrix))
-
-        // +x
-        currentMatrix = currentMatrix.multiply(zRotationMatrix)
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, xRotationMatrix))
-
-        // -x
-        currentMatrix = currentMatrix.multiply(zRotationMatrix).multiply(zRotationMatrix)
-        result.addAll(generateRotationMatricesForAxis(currentMatrix, xRotationMatrix))
+            currentMatrix = currentMatrix.multiply(axis2Matrix).multiply(axis2Matrix)
+            result.addAll(generateRotationMatricesForAxis(currentMatrix, axis1Matrix))
+        }
 
         return result.toList()
     }
