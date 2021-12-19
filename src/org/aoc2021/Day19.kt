@@ -102,7 +102,7 @@ object Day19 {
                     val rotatedBeaconDistances = beaconLocations.filter { it !== beaconLocation }
                         .map { it.matrixMultiply(rotationMatrix).vectorSubtract(rotatedBeaconLocation) }
 
-                    Triple(rotationMatrix, beaconLocation.matrixMultiply(rotationMatrix), rotatedBeaconDistances.toSet())
+                    Triple(rotationMatrix, rotatedBeaconLocation, rotatedBeaconDistances.toSet())
                 }
             }
         }.toMap()
