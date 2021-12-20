@@ -69,8 +69,7 @@ object Day19 {
 
         val solution2 = scannerLocations.values.maxOf { a ->
             scannerLocations.values.filter { it !== a }.maxOf { b ->
-                abs(a.coordinates[0] - b.coordinates[0]) + abs(a.coordinates[1] - b.coordinates[1]) +
-                        abs(a.coordinates[2] - b.coordinates[2])
+                a.coordinates.vectorSubtract(b.coordinates).map(::abs).sum()
             }
         }
 
