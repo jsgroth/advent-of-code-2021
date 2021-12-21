@@ -44,13 +44,7 @@ object Day21 {
     private fun solvePart2(lines: List<String>): Long {
         val (start1, start2) = parseStartingPositions(lines)
 
-        val (p1Wins, p2Wins) = computeWinningUniverses(Key(
-            start1,
-            0,
-            start2,
-            0,
-            true,
-        ))
+        val (p1Wins, p2Wins) = computeWinningUniverses(Key(start1, 0, start2, 0, true))
         return max(p1Wins, p2Wins)
     }
 
@@ -83,13 +77,7 @@ object Day21 {
                     } else {
                         key.p2Pos to key.p2Score
                     }
-                    val newKey = Key(
-                        newP1Pos,
-                        newP1Score,
-                        newP2Pos,
-                        newP2Score,
-                        !key.isP1Turn,
-                    )
+                    val newKey = Key(newP1Pos, newP1Score, newP2Pos, newP2Score, !key.isP1Turn)
                     val (p1Wins, p2Wins) = computeWinningUniverses(newKey, memoizedResults)
                     p1WinSum += p1Wins
                     p2WinSum += p2Wins
