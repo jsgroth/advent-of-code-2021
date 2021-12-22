@@ -5,10 +5,18 @@ import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
 
+private fun IntRange.size(): Int {
+    return if (this.last >= this.first) {
+        this.last - this.first + 1
+    } else {
+        0
+    }
+}
+
 object Day22 {
     data class Cube(val x: IntRange, val y: IntRange, val z: IntRange) {
         fun volume(): Long {
-            return x.count().toLong() * y.count() * z.count()
+            return x.size().toLong() * y.size() * z.size()
         }
 
         fun intersect(other: Cube): Cube {
