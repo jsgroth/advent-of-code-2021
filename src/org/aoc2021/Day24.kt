@@ -24,7 +24,12 @@ object Day24 {
 
             val result = Array(14) { 0 }
             conditions.forEach { condition ->
-                val compare = condition.compare
+                val compare = if (condition.compare.a is Input) {
+                    Compare(Add(condition.compare.a, LiteralValue(0)), condition.compare.b)
+                } else {
+                    condition.compare
+                }
+
                 if (compare.a !is Add || compare.a.a !is Input || compare.a.b !is LiteralValue || compare.b !is Input) {
                     throw IllegalStateException("unexpected compare: $compare")
                 }
@@ -143,7 +148,11 @@ object Day24 {
     data class Compare(val a: Expression, val b: Expression, val invert: Boolean = false): Expression {
         override fun simplify(): Expression {
             return if (a is LiteralValue && b is LiteralValue) {
-                LiteralValue(if (a.value == b.value) 1 else 0)
+                if (invert) {
+                    LiteralValue(if (a.value == b.value) 0 else 1)
+                } else {
+                    LiteralValue(if (a.value == b.value) 1 else 0)
+                }
             } else if (a is Compare && b == LiteralValue(0)) {
                 Compare(a.a, a.b, invert = true).simplify()
             } else if (isConditionImpossible(a, b)) {
