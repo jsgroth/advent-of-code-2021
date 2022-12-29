@@ -11,7 +11,8 @@ object Day13 {
     private fun solvePart1(lines: List<String>): Int {
         val (points, folds) = parseLines(lines)
 
-        val grid = generateGrid(points)
+        val (cols, rows) = determineGridSize(folds)
+        val grid = generateGrid(points, rows, cols)
 
         val folded = applyFold(grid, folds[0])
 
@@ -21,7 +22,8 @@ object Day13 {
     private fun solvePart2(lines: List<String>) {
         val (points, folds) = parseLines(lines)
 
-        val grid = generateGrid(points)
+        val (cols, rows) = determineGridSize(folds)
+        val grid = generateGrid(points, rows, cols)
 
         val folded = folds.fold(grid) { newGrid, fold -> applyFold(newGrid, fold) }
 
@@ -48,15 +50,19 @@ object Day13 {
         return points.toList() to folds.toList()
     }
 
-    private fun generateGrid(points: List<Point>): Array<Array<Boolean>> {
-        val maxX = points.maxOf(Point::x) + 1
-        val maxY = points.maxOf(Point::y) + 1
-
-        val grid = Array(maxX) { Array(maxY) { false } }
+    private fun generateGrid(points: List<Point>, rows: Int, cols: Int): Array<Array<Boolean>> {
+        val grid = Array(cols) { Array(rows) { false } }
 
         points.forEach { (x, y) -> grid[x][y] = true }
 
         return grid
+    }
+
+    private fun determineGridSize(folds: List<Fold>): Pair<Int, Int> {
+        val firstHorizontalFold = folds.first { it.direction == "x" }
+        val firstVerticalFold = folds.first { it.direction == "y" }
+
+        return (2 * firstHorizontalFold.coordinate + 1) to (2 * firstVerticalFold.coordinate + 1)
     }
 
     private fun applyFold(grid: Array<Array<Boolean>>, fold: Fold) = when (fold.direction) {
